@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conversión de Unidades de Masa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#3b4cc0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:15px;
+}
+
+.wrapper{
+    display:flex;
+    gap:25px;
+}
+
+.card{
+    background:#fff;
+    width:420px;
+    padding:26px;
+    border-radius:14px;
+    box-shadow:0 12px 30px rgba(0,0,0,0);
+}
+
+h2{
+    text-align:center;
+    color:#ffd600;
+    background:#3b4cc0;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+.campo{
+    width:90%;
+    margin:0 auto 18px;
+}
+
+input, select{
+    width:100%;
+    height:40px;
+    font-size:1.05rem;
+    border-radius:7px;
+    border:1px solid #ccc;
+    padding:0 10px;
+    text-align:center;
+}
+
+.swap{
+    text-align:center;
+    font-size:.9rem;
+    cursor:pointer;
+    margin-bottom:18px;
+}
+
+.resultado{
+    margin-top:18px;
+    font-size:1.15rem;
+    font-weight:bold;
+    text-align:center;
+}
+
+.operacion{
+    margin-top:6px;
+    font-size:.95rem;
+    color:#555;
+    text-align:center;
+}
+
+/* BARRA LATERAL */
+.escala{
+    background:#fff;
+    border-radius:12px;
+    padding:12px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
+}
+
+.unidad{
+    width:55px;
+    text-align:center;
+    font-weight:bold;
+    padding:6px 0;
+    transition:transform .3s;
+}
+
+.flecha{
+    font-size:1.3rem;
+    opacity:0;
+}
+
+.flecha.activa{
+    opacity:1;
+}
+
+.activo{
+    transform:scale(1.15);
+}
+
+/* COLORES */
+.t{color:#455a64}
+.kg{color:#2e7d32}
+.hg{color:#9e9d24}
+.dag{color:#558b2f}
+.g{color:#ef6c00}
+.dg{color:#f9a825}
+.cg{color:#6d4c41}
+.mg{color:#c2185b}
+
+@media(max-width:700px){
+    .wrapper{
+        flex-direction:column;
+        align-items:center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- TARJETA -->
+<div class="card">
+<h2>Conversión de Unidades de Masa</h2>
+
+<div class="campo">
+<input type="number" id="valor" placeholder="Ingrese el valor">
+</div>
+
+<div class="campo">
+<select id="origen">
+<option value="t">Tonelada (T)</option>
+<option value="kg">Kilogramo (KG)</option>
+<option value="hg">Hectogramo (HG)</option>
+<option value="dag">Decagramo (DAG)</option>
+<option value="g">Gramo (G)</option>
+<option value="dg">Decigramo (DG)</option>
+<option value="cg">Centrigramo (CG)</option>
+<option value="mg">Miligramo (MG)</option>
+</select>
+</div>
+
+<div class="swap" onclick="intercambiar()"> Intercambiar </div>
+
+<div class="campo">
+<select id="destino">
+<option value="t">Tonelada (T)</option>
+<option value="kg">Kilogramo (KG)</option>
+<option value="hg">Hectogramo (HG)</option>
+<option value="dag">Decagramo (DAG)</option>
+<option value="g">Gramo (G)</option>
+<option value="dg">Decigramo (DG)</option>
+<option value="cg">Centrigramo (CG)</option>
+<option value="mg">Miligramo (MG)</option>
+</select>
+</div>
+
+<div class="resultado" id="resultado"></div>
+<div class="operacion" id="operacion"></div>
+</div>
+
+<!-- ESCALA -->
+<div class="escala">
+<div class="unidad t" id="t">T</div>
+<div class="flecha" id="f1"></div>
+<div class="unidad kg" id="kg">KG</div>
+<div class="flecha" id="f2"></div>
+<div class="unidad hg" id="hg">HG</div>
+<div class="flecha" id="f3"></div>
+<div class="unidad dag" id="dag">DAG</div>
+<div class="flecha" id="f4"></div>
+<div class="unidad g" id="g">G</div>
+<div class="flecha" id="f5"></div>
+<div class="unidad dg" id="dg">DG</div>
+<div class="flecha" id="f6"></div>
+<div class="unidad cg" id="cg">CG</div>
+<div class="flecha" id="f7"></div>
+<div class="unidad mg" id="mg">MG</div>
+</div>
+
+</div>
+
+<script>
+const factores={
+t:1000000,kg:1000,hg:100,dag:10,
+g:1,dg:.1,cg:.01,mg:.001
+};
+
+const nombres={
+t:"toneladas",kg:"kilogramos",hg:"hectogramos",
+dag:"decagramos",g:"gramos",
+dg:"decigramos",cg:"centigramos",mg:"miligramos"
+};
+
+const orden=["t","kg","hg","dag","g","dg","cg","mg"];
+
+function convertir(){
+const v=parseFloat(valor.value);
+const o=origen.value;
+const d=destino.value;
+
+document.querySelectorAll(".unidad").forEach(u=>u.classList.remove("activo"));
+document.querySelectorAll(".flecha").forEach(f=>{
+f.classList.remove("activa");f.textContent="";
+});
+
+if(o===d){
+resultado.innerText="";
+operacion.innerText="Las unidades son iguales";
+return;
+}
+if(isNaN(v)){resultado.innerText="";operacion.innerText="";return;}
+
+const r=(v*factores[o])/factores[d];
+resultado.innerText=`${v} ${o.toUpperCase()} = ${Number.isInteger(r)?r:r.toFixed(4)} ${d.toUpperCase()}`;
+operacion.innerText=`Conversión de ${nombres[o]} a ${nombres[d]}`;
+
+document.getElementById(o).classList.add("activo");
+document.getElementById(d).classList.add("activo");
+
+let i1=orden.indexOf(o), i2=orden.indexOf(d);
+let s=i1<i2?"↓":"↑";
+for(let i=Math.min(i1,i2);i<Math.max(i1,i2);i++){
+let f=document.getElementById("f"+(i+1));
+f.textContent=s;f.classList.add("activa");
+}
+}
+
+function intercambiar(){
+[origen.value,destino.value]=[destino.value,origen.value];
+convertir();
+}
+
+["valor","origen","destino"].forEach(id=>{
+document.getElementById(id).addEventListener("input",convertir);
+});
+</script>
+
+</body>
+</html>
+
